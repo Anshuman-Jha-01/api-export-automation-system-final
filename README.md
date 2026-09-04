@@ -57,8 +57,8 @@ Clone the repository and install all required npm packages:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Anshuman-Jha-01/api-export-automation-system
-cd api-export-automation-system
+git clone https://github.com/Anshuman-Jha-01/api-export-automation-system-final
+cd api-export-automation-system-final
 
 # Install all dependencies
 npm install
