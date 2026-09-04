@@ -57,8 +57,8 @@ Clone the repository and install all required npm packages:
 
 ```bash
 # Clone the repository
-git clone <your-repository-url>
-cd <repository-folder>
+git clone https://github.com/Anshuman-Jha-01/api-export-automation-system
+cd api-export-automation-system
 
 # Install all dependencies
 npm install
@@ -101,8 +101,8 @@ CC_MONITORING=""
 # ==============================================================================
 SEARCH_KEYWORD="Singing Bowls"
 DAILY_SEND_LIMIT="100"
-PRESENTATION_PATH="assets/Export_API_documentation.docx.pdf"
-PRESENTATION_FILENAME="Export_API_documentation.docx.pdf"
+PRESENTATION_PATH="company-presentation-file-path"
+PRESENTATION_FILENAME="company-presentation-filename"
 ```
 
 > **Note**: You can also update these credentials anytime directly from the **Settings** tab in the web application. Changes made in the UI are saved to `data/settings.json`.
@@ -133,11 +133,11 @@ When launching email campaigns, the system can automatically attach your product
 1. Place your PDF file into the `assets/` directory:
    ```bash
    # Example: Place your document in assets/
-   assets/Export_API_documentation.docx.pdf
+   assets/company_presentation.pdf
    ```
 2. In **Settings → Product Presentation Asset**:
-   - Set **Server Asset File Path**: `assets/Export_API_documentation.docx.pdf`
-   - Set **Outgoing Attachment Display Name**: `Export_API_documentation.docx.pdf` (or any custom name your recipients should see).
+   - Set **Server Asset File Path**: `assets/company_presentation.pdf`
+   - Set **Outgoing Attachment Display Name**: `company_presentation.pdf` (or any custom name your recipients should see).
 3. You can click **Inspect & Download Current PDF** in the Settings panel or navigation bar to preview the exact document that will be sent.
 
 ---
