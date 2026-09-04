@@ -1,0 +1,42 @@
+{
+  "info@himalayansacredsound.com": {
+    "email": "info@himalayansacredsound.com",
+    "reason": "Remote MTA bounce: 550 5.1.0 Recipient not found (Unregistered mailbox on GoDaddy secureserver.net)",
+    "bounced_at": "2026-09-04T11:05:00.000Z"
+  },
+  "hello@holistic-wellbeing.co.uk": {
+    "email": "hello@holistic-wellbeing.co.uk",
+    "reason": "Remote MTA bounce: 550 Mailbox does not exist (StackMail unconfigured mailbox / 403 Forbidden web server)",
+    "bounced_at": "2026-09-04T11:05:00.000Z"
+  },
+  "contact@soundmeditation.com.au": {
+    "email": "contact@soundmeditation.com.au",
+    "reason": "Remote MTA bounce: 554 5.7.1 Relay access denied (_dc-mx misconfigured proxy)",
+    "bounced_at": "2026-09-04T10:33:48.000Z"
+  },
+  "info@yogaworks.com": {
+    "email": "info@yogaworks.com",
+    "reason": "Remote MTA bounce: Policy blocked by recipient enterprise administrator",
+    "bounced_at": "2026-09-04T10:34:08.000Z"
+  },
+  "support@gaiam.com": {
+    "email": "support@gaiam.com",
+    "reason": "Remote MTA bounce: 550 Recipient rejected (Unmonitored / blocked corporate support desk)",
+    "bounced_at": "2026-09-04T10:35:00.000Z"
+  },
+  "info@yoga-alliance.ca": {
+    "email": "info@yoga-alliance.ca",
+    "reason": "DNS NXDOMAIN: Domain yoga-alliance.ca does not exist",
+    "bounced_at": "2026-09-04T10:33:38.000Z"
+  },
+  "wholesale@shantimats.com": {
+    "email": "wholesale@shantimats.com",
+    "reason": "DNS NXDOMAIN: Domain shantimats.com does not exist",
+    "bounced_at": "2026-09-04T10:35:00.000Z"
+  },
+  "hello@stillpointyoga.london": {
+    "email": "hello@stillpointyoga.london",
+    "reason": "DNS NXDOMAIN: Domain stillpointyoga.london does not exist",
+    "bounced_at": "2026-09-04T10:35:00.000Z"
+  }
+}
