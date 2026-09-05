@@ -303,6 +303,7 @@ export const SearchDiscoveryView: React.FC<SearchDiscoveryViewProps> = ({
                 <option value={8} className="bg-slate-900 text-slate-100">8 Prospects</option>
                 <option value={12} className="bg-slate-900 text-slate-100">12 Prospects</option>
                 <option value={20} className="bg-slate-900 text-slate-100">20 Prospects</option>
+                <option value={30} className="bg-slate-900 text-slate-100">30 Prospects</option>
               </select>
             </div>
           </div>

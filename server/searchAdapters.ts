@@ -48,7 +48,7 @@ CRITICAL DELIVERABILITY REQUIREMENTS:
 5. DO NOT invent placeholder emails (such as info@... or hello@...) for parked domains or domains that do not have an active email service (like GoDaddy parked domains).
 6. Focus on real sound meditation studios, holistic wellness centers, acoustic therapy academies, crystal and Tibetan singing bowl importers, yoga retail boutiques, and spiritual gift shops that have publicly published, active contact emails.
 
-Identify up to ${Math.min(maxResults + 4, 20)} candidates to allow for deliverability filtering.
+Identify up to ${Math.min(maxResults + 4, 40)} candidates to allow for deliverability filtering.
 
 Return ONLY a valid JSON array of objects conforming strictly to this schema:
 [

@@ -242,7 +242,7 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
             <button
               id="btn-launch-campaign-top"
               onClick={handleLaunchCampaign}
-              disabled={isSending || audienceBuyers.length === 0}
+              disabled={isSending || activeSelectedBuyers.length === 0}
               className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600/90 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 border border-emerald-400/30 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {isSending ? (
@@ -253,7 +253,7 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Launch Outreach ({audienceBuyers.length} Receivers)</span>
+                  <span>Launch Outreach ({activeSelectedBuyers.length} Receivers{unselectedCount > 0 ? `, ${unselectedCount} unselected` : ''})</span>
                 </>
               )}
             </button>
@@ -310,6 +310,187 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
                 <span>All Buyers ({buyers.length})</span>
               </button>
             </div>
+          </div>
+
+          {/* Recipient Selection & Unselect Controls */}
+          <div className="backdrop-blur-md bg-white/[0.03] rounded-xl border border-white/10 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-purple-400" />
+                <span className="text-xs font-semibold text-white">Campaign Recipients Selection</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  {activeSelectedBuyers.length} selected
+                </span>
+                {unselectedCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {unselectedCount} unselected
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRecipientsExpanded(!isRecipientsExpanded)}
+                className="text-[11px] text-slate-400 hover:text-white flex items-center space-x-1 py-1 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
+              >
+                <span>{isRecipientsExpanded ? 'Hide List' : 'Inspect & Unselect Buyers'}</span>
+                {isRecipientsExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+
+            {/* Quick Action Bar for Unselecting */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center space-x-1 transition"
+                  title="Include all buyers in this audience segment"
+                >
+                  <CheckSquare className="w-3 h-3 text-emerald-400" />
+                  <span>Select All</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleUnselectAll}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center space-x-1 transition"
+                  title="Unselect all buyers in this audience segment"
+                >
+                  <Square className="w-3 h-3 text-slate-400" />
+                  <span>Unselect All</span>
+                </button>
+
+                {riskyInAudienceCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleUnselectRisky}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 flex items-center space-x-1 transition"
+                    title="Safely unselect all risky and invalid email addresses"
+                  >
+                    <ShieldAlert className="w-3 h-3 text-amber-400" />
+                    <span>Unselect Risky ({riskyInAudienceCount})</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Search filter within recipients */}
+              <div className="relative w-48">
+                <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter recipients..."
+                  value={recipientSearchQuery}
+                  onChange={e => setRecipientSearchQuery(e.target.value)}
+                  className="w-full text-[11px] rounded-lg border border-white/10 bg-white/5 pl-7 pr-2.5 py-1 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400/50"
+                />
+              </div>
+            </div>
+
+            {/* Recipients Table / Checklist */}
+            {isRecipientsExpanded && (
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-white/10 bg-black/20 text-xs">
+                {audienceBuyers.length === 0 ? (
+                  <div className="p-4 text-center text-slate-400 text-xs">
+                    No buyers available in the "{audience}" segment.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {audienceBuyers
+                      .filter(b => {
+                        if (!recipientSearchQuery.trim()) return true;
+                        const q = recipientSearchQuery.toLowerCase();
+                        return (
+                          b.company_name?.toLowerCase().includes(q) ||
+                          b.buyer_name?.toLowerCase().includes(q) ||
+                          b.email.toLowerCase().includes(q) ||
+                          b.country?.toLowerCase().includes(q)
+                        );
+                      })
+                      .map((buyer) => {
+                        const isSelected = !unselectedEmails.has(buyer.email.toLowerCase().trim());
+                        const isRisky = buyer.deliverability_status === 'risky' || buyer.deliverability_status === 'undeliverable' || buyer.status === 'invalid';
+
+                        return (
+                          <div
+                            key={buyer.email}
+                            className={`flex items-center justify-between p-2.5 transition ${
+                              isSelected ? 'bg-transparent hover:bg-white/[0.03]' : 'bg-rose-950/10 opacity-70 hover:opacity-90'
+                            }`}
+                          >
+                            <label className="flex items-center space-x-2.5 cursor-pointer flex-1 min-w-0 pr-2">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelect(buyer.email)}
+                                className="rounded text-purple-600 focus:ring-purple-500 w-3.5 h-3.5"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center space-x-1.5 flex-wrap">
+                                  <span className={`font-medium truncate text-xs ${isSelected ? 'text-white' : 'text-slate-400 line-through'}`}>
+                                    {buyer.company_name || buyer.buyer_name}
+                                  </span>
+                                  {buyer.crawled_direct_email && (
+                                    <span
+                                      className="inline-flex items-center space-x-0.5 px-1 py-0.2 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                      title={`Direct email crawled from website ${buyer.crawl_source_section || 'contact/about'} pages`}
+                                    >
+                                      <Globe className="w-2.5 h-2.5" />
+                                      <span>Direct Crawled</span>
+                                    </span>
+                                  )}
+                                  {isRisky && (
+                                    <span className="inline-flex items-center space-x-0.5 px-1 py-0.2 rounded text-[9px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                      <AlertTriangle className="w-2.5 h-2.5" />
+                                      <span>{buyer.deliverability_status || 'risky'}</span>
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-mono mt-0.5">
+                                  <span className="truncate">{buyer.email}</span>
+                                  {buyer.country && <span className="text-slate-500">• {buyer.country}</span>}
+                                  {buyer.category && <span className="text-slate-500">• {buyer.category}</span>}
+                                </div>
+                              </div>
+                            </label>
+
+                            <div className="flex items-center space-x-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handlePreview(buyer)}
+                                className="text-[10px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition"
+                                title="Preview email rendered for this recipient"
+                              >
+                                Preview
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleSelect(buyer.email)}
+                                className={`text-[10px] font-medium px-2 py-0.5 rounded border transition ${
+                                  isSelected
+                                    ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/20'
+                                    : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/20'
+                                }`}
+                              >
+                                {isSelected ? 'Unselect' : 'Include'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {unselectedCount > 0 && (
+              <div className="text-[11px] text-amber-300/90 flex items-center space-x-1.5 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg">
+                <Info className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  <strong>{unselectedCount} buyer(s) unselected:</strong> These recipients are excluded and will not be contacted in this campaign.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Subject Line */}
@@ -479,7 +660,7 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
           <button
             id="btn-launch-campaign-sidebar"
             onClick={handleLaunchCampaign}
-            disabled={isSending || audienceBuyers.length === 0}
+            disabled={isSending || activeSelectedBuyers.length === 0}
             className="w-full py-3.5 rounded-xl text-xs font-bold bg-emerald-600/90 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 border border-emerald-400/30 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
           >
             {isSending ? (
@@ -490,7 +671,7 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                <span>Launch Outreach ({audienceBuyers.length} Receivers)</span>
+                <span>Launch Outreach ({activeSelectedBuyers.length} Receivers{unselectedCount > 0 ? `, ${unselectedCount} unselected` : ''})</span>
               </>
             )}
           </button>
@@ -506,7 +687,7 @@ export const CampaignSendView: React.FC<CampaignSendViewProps> = ({
               <div>
                 <h4 className="font-bold text-sm text-white">Outreach Campaign in Progress</h4>
                 <p className="text-xs text-slate-400 font-mono">
-                  Dispatching to {audienceBuyers.length} {audience} buyers
+                  Dispatching to {activeSelectedBuyers.length} selected buyers
                 </p>
               </div>
             </div>

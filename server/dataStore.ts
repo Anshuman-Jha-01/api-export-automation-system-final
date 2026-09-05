@@ -9,6 +9,29 @@ const BUSINESS_FILE = path.join(DATA_DIR, 'business_emails.csv');
 const INDIVIDUAL_FILE = path.join(DATA_DIR, 'individual_emails.csv');
 const SENT_LOG_FILE = path.join(DATA_DIR, 'sent_log.csv');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+const BOUNCES_FILE = path.join(DATA_DIR, 'bounces.json');
+
+export interface BouncedEmailRecord {
+  email: string;
+  reason: string;
+  timestamp: string;
+}
+
+export function readBouncedEmails(): Record<string, BouncedEmailRecord> {
+  if (!fs.existsSync(BOUNCES_FILE)) return {};
+  try {
+    const raw = fs.readFileSync(BOUNCES_FILE, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+export function isEmailBounced(email: string): boolean {
+  if (!email) return false;
+  const bounces = readBouncedEmails();
+  return Boolean(bounces[email.toLowerCase().trim()]);
+}
 
 // Ensure directories exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -231,6 +254,79 @@ export function readSentLog(): SendLogEntry[] {
     sent_at: r.sent_at || new Date().toISOString(),
     response_message: r.response_message || ''
   })).filter(s => s.email.length > 0);
+}
+
+// Write Sent Log Entries
+export function writeSentLog(entries: SendLogEntry[]): void {
+  const headers = 'delivery_id,campaign_id,email,buyer_name,company_name,subject,status,sent_at,response_message\n';
+  const lines = entries.map(entry => [
+    escapeCSVField(entry.delivery_id),
+    escapeCSVField(entry.campaign_id),
+    escapeCSVField(entry.email),
+    escapeCSVField(entry.buyer_name),
+    escapeCSVField(entry.company_name),
+    escapeCSVField(entry.subject),
+    escapeCSVField(entry.status),
+    escapeCSVField(entry.sent_at),
+    escapeCSVField(entry.response_message ?? '')
+  ].join(','));
+  fs.writeFileSync(SENT_LOG_FILE, headers + lines.join('\n') + (lines.length > 0 ? '\n' : ''), 'utf-8');
+}
+
+// Record Bounced Email and update buyers & sent log
+export function recordBouncedEmail(email: string, reason: string): { updatedBuyers: number; updatedSentLogs: number } {
+  const cleanEmail = email.toLowerCase().trim();
+  const bounces = readBouncedEmails();
+  bounces[cleanEmail] = {
+    email: cleanEmail,
+    reason,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    fs.writeFileSync(BOUNCES_FILE, JSON.stringify(bounces, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Failed to write bounces file:', err);
+  }
+
+  // Update buyers list to invalid/undeliverable
+  const buyers = readBuyers();
+  let updatedBuyers = 0;
+  const updatedBuyersList = buyers.map(b => {
+    if (b.email.toLowerCase().trim() === cleanEmail) {
+      updatedBuyers++;
+      return {
+        ...b,
+        status: 'invalid' as const,
+        deliverability_status: 'undeliverable' as const,
+        deliverability_reason: `Remote MTA bounce: ${reason}`,
+        notes: `Remote MTA bounce recorded: ${reason}`
+      };
+    }
+    return b;
+  });
+  if (updatedBuyers > 0) {
+    writeBuyers(updatedBuyersList);
+  }
+
+  // Update sent log records to failed
+  const sentLog = readSentLog();
+  let updatedSentLogs = 0;
+  const updatedSentLogList = sentLog.map(s => {
+    if (s.email.toLowerCase().trim() === cleanEmail) {
+      updatedSentLogs++;
+      return {
+        ...s,
+        status: 'failed' as const,
+        response_message: `Remote MTA bounce: ${reason}`
+      };
+    }
+    return s;
+  });
+  if (updatedSentLogs > 0) {
+    writeSentLog(updatedSentLogList);
+  }
+
+  return { updatedBuyers, updatedSentLogs };
 }
 
 // Append Sent Log Entry
